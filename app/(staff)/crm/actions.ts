@@ -88,3 +88,39 @@ export async function deleteContact(fd: FormData) {
   await sql`delete from contacts where id = ${int(fd, 'id')}`;
   redirect(`/clients/${int(fd, 'client_id')}`);
 }
+
+export async function deleteClient(fd: FormData) {
+  const u = await requireStaff(['admin']);
+  const id = int(fd, 'id')!;
+  const [c] = await sql`select name from clients where id = ${id}`;
+  if (!c) redirect('/clients');
+  if ((str(fd, 'confirm') || '').toUpperCase() !== 'DELETE') redirect(`/clients/${id}?err=${encodeURIComponent('Type DELETE in the box to confirm')}`);
+  const everything = fd.get('everything') === 'on';
+  const [cnt] = await sql`select (select count(*) from jobs where client_id = ${id})::int jobs, (select count(*) from invoices where client_id = ${id})::int invs`;
+  if (!everything && (cnt.jobs > 0 || cnt.invs > 0))
+    redirect(`/clients/${id}?err=${encodeURIComponent(`This client has ${cnt.jobs} job(s) and ${cnt.invs} invoice(s). Tick "also delete their jobs, quotes, enquiries and invoices" to remove everything.`)}`);
+  await sql.begin(async (tx: any) => {
+    if (everything) {
+      const jobs = await tx`select id from jobs where client_id = ${id}`;
+      const jids = jobs.map((j: any) => j.id);
+      const invs = await tx`select id from invoices where client_id = ${id} or job_id = any(${jids})`;
+      const iids = invs.map((i: any) => i.id);
+      const qs = await tx`select id from quotes where client_id = ${id}`;
+      const qids = qs.map((q: any) => q.id);
+      const es = await tx`select id from enquiries where client_id = ${id}`;
+      const eids = es.map((e: any) => e.id);
+      await tx`delete from activities where (entity = 'job' and entity_id = any(${jids})) or (entity = 'invoice' and entity_id = any(${iids}))
+        or (entity = 'quote' and entity_id = any(${qids})) or (entity = 'enquiry' and entity_id = any(${eids}))`;
+      await tx`delete from invoices where id = any(${iids})`;
+      await tx`delete from defects where job_id = any(${jids})`;
+      await tx`update expenses set job_id = null where job_id = any(${jids})`;
+      await tx`delete from jobs where id = any(${jids})`;
+      await tx`delete from quotes where id = any(${qids})`;
+      await tx`delete from enquiries where id = any(${eids})`;
+    }
+    await tx`delete from activities where entity = 'client' and entity_id = ${id}`;
+    await tx`delete from clients where id = ${id}`;
+  });
+  await audit(u, 'delete', 'client', id, `${c.name}${everything ? ' (with all jobs/quotes/invoices)' : ''}`);
+  redirect(`/clients?msg=${encodeURIComponent(`${c.name} deleted`)}`);
+}

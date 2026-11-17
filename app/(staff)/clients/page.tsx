@@ -13,6 +13,7 @@ export default async function Clients({ searchParams }: { searchParams: Promise<
     from clients c where c.name ilike ${q} or coalesce(c.email,'') ilike ${q} order by c.name`;
   return (
     <>
+      {sp.msg && <div className="alert green">{sp.msg}</div>}
       <Head title="Clients" sub={`${rows.length} clients`}>
         <form className="row"><input name="q" placeholder="Search…" defaultValue={sp.q} /><button className="btn sec auto">Search</button></form>
       </Head>

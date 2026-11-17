@@ -4,11 +4,14 @@ import { money, fmtDate } from '@/lib/util';
 import { invoiceState } from '@/lib/logic';
 import { Badge, Head, Field, Select } from '@/components/ui';
 import { ActivityLog } from '@/components/activity';
-import { saveClient, addContact, deleteContact } from '../../crm/actions';
+import { saveClient, addContact, deleteContact, deleteClient } from '../../crm/actions';
+import { getUser } from '@/lib/auth';
 import { SOURCES } from '@/components/enquiry-form';
 
-export default async function Client({ params }: { params: Promise<{ id: string }> }) {
+export default async function Client({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<any> }) {
   const id = Number((await params).id);
+  const sp = await searchParams;
+  const me = (await getUser())!;
   const [c] = await sql`select * from clients where id = ${id}`;
   if (!c) notFound();
   const [contacts, enqs, quotes, jobs, invs] = await Promise.all([
@@ -26,6 +29,7 @@ export default async function Client({ params }: { params: Promise<{ id: string 
         <a className="btn sec" href={`/jobs/new?client=${c.id}`}>+ Job</a>
         <a className="btn sec" href={`/finance/statement/${c.id}`}>Statement</a>
       </Head>
+      {sp.err && <div className="alert red">{sp.err}</div>}
       <div className="grid g4" style={{ marginBottom: 16 }}>
         <div className="stat"><div className="n">{jobs.filter((j: any) => j.status === 'completed').length}</div><div className="l">Completed jobs</div></div>
         <div className="stat"><div className="n">{quotes.length}</div><div className="l">Quotes</div></div>
@@ -84,6 +88,24 @@ export default async function Client({ params }: { params: Promise<{ id: string 
             <Field label="Notes" name="notes" type="textarea" value={c.notes} />
             <button className="btn">Save</button>
           </form>
+          {me.role === 'admin' && (
+            <details className="card">
+              <summary style={{ color: 'var(--red)' }}>Delete this client</summary>
+              <form action={deleteClient} style={{ marginTop: 10 }}>
+                <input type="hidden" name="id" value={c.id} />
+                <p className="small">This can't be undone. Contacts and notes are removed too.</p>
+                {(jobs.length > 0 || invs.length > 0 || quotes.length > 0 || enqs.length > 0) && (
+                  <label style={{ display: 'flex', gap: 6, fontWeight: 500, marginBottom: 8 }}>
+                    <input type="checkbox" name="everything" /> Also delete their {jobs.length} job(s), {quotes.length} quote(s), {enqs.length} enquiry(ies) and {invs.length} invoice(s)
+                  </label>
+                )}
+                <div className="row">
+                  <div className="f"><label>Type DELETE to confirm</label><input name="confirm" autoComplete="off" required /></div>
+                  <div className="f auto"><button className="btn danger">Delete client</button></div>
+                </div>
+              </form>
+            </details>
+          )}
         </div>
       </div>
     </>
