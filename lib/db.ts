@@ -1,5 +1,6 @@
 import postgres from 'postgres';
 import { SCHEMA } from './schema';
+import { VIC_HOLIDAYS } from './constants';
 
 const url = process.env.DATABASE_URL || process.env.POSTGRES_URL || '';
 
@@ -30,6 +31,8 @@ export function ensureDb() {
                  ('Midi bus (33 seat)', 'midi', 4, 0, 350, 15, 25),
                  ('Minibus (22 seat)', 'mini', 3.2, 0, 300, 15, 25)`;
       }
+      const hol = await sql`select count(*)::int as n from holidays`;
+      if (hol[0].n === 0) for (const [d, n] of VIC_HOLIDAYS) await sql`insert into holidays (day, name) values (${d}, ${n}) on conflict do nothing`;
     })().catch((e) => {
       ready = g.__ready = null;
       throw e;

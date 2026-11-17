@@ -4,6 +4,7 @@ import { sql } from '@/lib/db';
 import { requireAdmin, requireStaff } from '@/lib/auth';
 import { str, int, num, audit } from '@/lib/util';
 import { runAutomations } from '@/lib/logic';
+import { VIC_HOLIDAYS } from '@/lib/constants';
 
 const KEYS = ['company_name', 'abn', 'phone', 'email', 'address', 'depots', 'bank_details', 'quote_expiry_days', 'quote_followup_days',
   'invoice_reminder_days', 'default_payment_terms', 'max_shift_hours', 'min_rest_hours', 'max_week_hours', 'alert_days',
@@ -47,14 +48,7 @@ export async function deleteHoliday(fd: FormData) {
 export async function addVicHolidays() {
   await requireAdmin();
   // Victorian public holidays 2026–2027 (check against business.vic.gov.au each year; AFL GF Friday is set late)
-  const list: [string, string][] = [
-    ['2026-01-01', "New Year's Day"], ['2026-01-26', 'Australia Day'], ['2026-03-09', 'Labour Day'], ['2026-04-03', 'Good Friday'],
-    ['2026-04-04', 'Easter Saturday'], ['2026-04-05', 'Easter Sunday'], ['2026-04-06', 'Easter Monday'], ['2026-04-25', 'Anzac Day'],
-    ['2026-06-08', "King's Birthday"], ['2026-11-03', 'Melbourne Cup'], ['2026-12-25', 'Christmas Day'], ['2026-12-26', 'Boxing Day'], ['2026-12-28', 'Boxing Day (additional)'],
-    ['2027-01-01', "New Year's Day"], ['2027-01-26', 'Australia Day'], ['2027-03-08', 'Labour Day'], ['2027-03-26', 'Good Friday'],
-    ['2027-03-27', 'Easter Saturday'], ['2027-03-28', 'Easter Sunday'], ['2027-03-29', 'Easter Monday'], ['2027-04-25', 'Anzac Day'],
-    ['2027-06-14', "King's Birthday"], ['2027-11-02', 'Melbourne Cup'], ['2027-12-25', 'Christmas Day'], ['2027-12-26', 'Boxing Day'], ['2027-12-27', 'Christmas Day (additional)'], ['2027-12-28', 'Boxing Day (additional)'],
-  ];
+  const list = VIC_HOLIDAYS;
   for (const [d, n] of list) await sql`insert into holidays (day, name) values (${d}, ${n}) on conflict (day) do nothing`;
   redirect('/settings?msg=Holidays+added+-+please+double-check+the+dates#holidays');
 }

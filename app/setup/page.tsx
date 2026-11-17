@@ -9,6 +9,7 @@ async function setup(fd: FormData) {
   await ensureDb();
   const [{ n }] = await sql`select count(*)::int n from users where role = 'admin'`;
   if (n > 0) redirect('/login');
+  if (process.env.SETUP_CODE && String(fd.get('code') || '').trim() !== process.env.SETUP_CODE) redirect('/setup?e=2');
   const name = String(fd.get('name')).trim();
   const email = String(fd.get('email')).trim().toLowerCase();
   const pw = String(fd.get('password'));
@@ -31,7 +32,9 @@ export default async function Setup({ searchParams }: { searchParams: Promise<an
       <form action={setup} className="loginbox">
         <h1>Welcome 👋</h1>
         <p className="muted">Create the first admin account. You can add office staff and drivers after this.</p>
-        {sp.e && <div className="alert red">Password must be at least 8 characters.</div>}
+        {sp.e === '1' && <div className="alert red">Password must be at least 8 characters.</div>}
+        {sp.e === '2' && <div className="alert red">Setup code is wrong.</div>}
+        {process.env.SETUP_CODE && <div className="f"><label>Setup code (from Claude)</label><input name="code" required autoComplete="off" /></div>}
         <div className="f"><label>Company name</label><input name="company" defaultValue="Endeavour Buses" required /></div>
         <div className="f"><label>Your name</label><input name="name" required /></div>
         <div className="f"><label>Email</label><input name="email" type="email" required /></div>
