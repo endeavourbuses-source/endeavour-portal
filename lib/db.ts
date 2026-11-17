@@ -23,7 +23,14 @@ let ready: Promise<void> | null = g.__ready || null;
 export function ensureDb() {
   if (!ready) {
     ready = g.__ready = (async () => {
+      // Only run the full schema when it changes (saves a round trip on every cold start)
+      const SCHEMA_VERSION = '3';
+      try {
+        const [v] = await sql`select value from settings where key = 'schema_version'`;
+        if (v && v.value === SCHEMA_VERSION) return;
+      } catch {}
       await sql.unsafe(SCHEMA);
+      await sql`insert into settings (key, value) values ('schema_version', ${sql.json(SCHEMA_VERSION)}) on conflict (key) do update set value = excluded.value`;
       const rc = await sql`select count(*)::int as n from rate_cards`;
       if (rc[0].n === 0) {
         await sql`insert into rate_cards (name, bus_class, per_km, per_hour, min_charge, weekend_pct, holiday_pct)

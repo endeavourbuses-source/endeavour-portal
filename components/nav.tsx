@@ -1,6 +1,12 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Link, { useLinkStatus } from 'next/link';
+
+function Pending() {
+  const { pending } = useLinkStatus();
+  return pending ? <span className="navbar-progress" aria-hidden /> : null;
+}
 
 type Item = [href: string, label: string, icon: string];
 const GROUPS: [string, Item[]][] = [
@@ -34,7 +40,7 @@ export function Nav({ company, user }: { company: string; user: { name: string; 
         <div key={g || 'top'}>
           {g && <div className="grp">{g}</div>}
           {items.map(([href, label, icon]) => (
-            <a key={href} href={href} className={active(path, href) ? 'on' : ''}><span className="ic">{icon}</span>{label}</a>
+            <Link key={href} href={href} prefetch={false} className={active(path, href) ? 'on' : ''}><span className="ic">{icon}</span>{label}<Pending /></Link>
           ))}
         </div>
       ))}
@@ -62,7 +68,7 @@ export function Nav({ company, user }: { company: string; user: { name: string; 
       {/* mobile bottom tabs */}
       <nav className="mtabs">
         {TABS.map(([href, label, icon]) => (
-          <a key={href} href={href} className={active(path, href) ? 'on' : ''}><span className="ti">{icon}</span>{label}</a>
+          <Link key={href} href={href} className={active(path, href) ? 'on' : ''}><span className="ti">{icon}</span>{label}<Pending /></Link>
         ))}
       </nav>
     </>

@@ -30,19 +30,19 @@ export async function saveRate(fd: FormData) {
   if (id) await sql`update rate_cards set ${sql(v)} where id = ${id}`;
   else await sql`insert into rate_cards ${sql(v)}`;
   await audit(u, 'rate card', 'rate_card', id);
-  redirect('/settings?msg=Rate+card+saved#rates');
+  redirect('/settings?msg=Rate+card+saved');
 }
 
 export async function addHoliday(fd: FormData) {
   await requireAdmin();
   await sql`insert into holidays (day, name) values (${str(fd, 'day')}, ${str(fd, 'name')}) on conflict (day) do update set name = excluded.name`;
-  redirect('/settings#holidays');
+  redirect('/settings?msg=Holidays+updated');
 }
 
 export async function deleteHoliday(fd: FormData) {
   await requireAdmin();
   await sql`delete from holidays where day = ${str(fd, 'day')}`;
-  redirect('/settings#holidays');
+  redirect('/settings?msg=Holidays+updated');
 }
 
 export async function addVicHolidays() {
@@ -50,7 +50,7 @@ export async function addVicHolidays() {
   // Victorian public holidays 2026–2027 (check against business.vic.gov.au each year; AFL GF Friday is set late)
   const list = VIC_HOLIDAYS;
   for (const [d, n] of list) await sql`insert into holidays (day, name) values (${d}, ${n}) on conflict (day) do nothing`;
-  redirect('/settings?msg=Holidays+added+-+please+double-check+the+dates#holidays');
+  redirect('/settings?msg=Holidays+added+-+please+double-check+the+dates');
 }
 
 export async function runNow() {
