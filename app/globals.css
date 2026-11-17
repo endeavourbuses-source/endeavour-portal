@@ -166,3 +166,17 @@ details summary { cursor: pointer; font-weight: 600; }
 .mtabs a:hover { text-decoration: none; }
 .grid > * { min-width: 0; }
 @media (max-width: 900px) { .mtop, .mtabs { display: flex; } }
+
+/* mobile card lists */
+.mlist { display: none; }
+.mitem { display: block; color: inherit; padding: 11px 2px; border-bottom: 1px solid var(--line); }
+.mitem:last-child { border-bottom: 0; }
+.mitem:hover { text-decoration: none; background: #fafcff; }
+.mitem .mt { font-weight: 600; color: var(--navy); margin: 2px 0; }
+.mrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 900px) {
+  .mlist { display: block; }
+  table.desk { display: none; }
+  .subnav { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .subnav a { white-space: nowrap; }
+}

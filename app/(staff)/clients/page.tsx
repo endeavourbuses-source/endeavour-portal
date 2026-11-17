@@ -18,7 +18,15 @@ export default async function Clients({ searchParams }: { searchParams: Promise<
       </Head>
       <div className="grid g2" style={{ gridTemplateColumns: '2fr 1fr' }}>
         <div className="card">
-          <table>
+          <div className="mlist">
+            {rows.map((c: any) => (
+              <a key={c.id} href={`/clients/${c.id}`} className="mitem">
+                <div className="mrow"><b>{c.name}</b><span className="small">{money(c.revenue)}</span></div>
+                <div className="small muted">{c.type} · {c.jobs} jobs · {c.phone || c.email || ''}</div>
+              </a>
+            ))}
+          </div>
+          <table className="desk">
             <thead><tr><th>Name</th><th>Type</th><th>Contact</th><th>Terms</th><th className="r">Jobs</th><th className="r">Revenue</th></tr></thead>
             <tbody>
               {rows.map((c: any) => (

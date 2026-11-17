@@ -12,7 +12,16 @@ export default async function Quotes({ searchParams }: { searchParams: Promise<a
       <Head title="Quotes"><a className="btn" href="/quotes/new">+ New quote</a></Head>
       <SubNav on={`/quotes?f=${f}`} items={[['/quotes?f=all', 'All'], ['/quotes?f=draft', 'Draft'], ['/quotes?f=sent', 'Sent'], ['/quotes?f=accepted', 'Accepted'], ['/quotes?f=declined', 'Declined'], ['/quotes?f=expired', 'Expired']]} />
       <div className="card">
-        <table>
+        <div className="mlist">
+          {rows.map((q: any) => (
+            <a key={q.id} href={`/quotes/${q.id}`} className="mitem">
+              <div className="mrow"><b>Q{q.id}{q.version > 1 ? ` v${q.version}` : ''} · {money(q.total)}</b><Badge s={q.status} /></div>
+              <div className="mt">{q.client || q.organisation || '—'}</div>
+              <div className="small muted">{fmtDate(q.trip_date)} · {q.pickup} → {q.dropoff}</div>
+            </a>
+          ))}
+        </div>
+        <table className="desk">
           <thead><tr><th>Quote</th><th>Client</th><th>Trip</th><th className="r">Total</th><th>Status</th><th>Sent</th><th>Expires</th></tr></thead>
           <tbody>
             {rows.map((q: any) => (

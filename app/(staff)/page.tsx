@@ -46,8 +46,17 @@ export default async function Dashboard() {
         <div>
           <div className="card">
             <h2>Today's jobs</h2>
-            {todayJobs.length === 0 ? <Empty>No jobs today.</Empty> : (
-              <table>
+            {todayJobs.length === 0 ? <Empty>No jobs today.</Empty> : (<>
+              <div className="mlist">
+                {todayJobs.map((j: any) => (
+                  <a key={j.id} href={`/jobs/${j.id}`} className="mitem">
+                    <div className="mrow"><b>{j.start_time}–{j.end_time}</b><Badge s={j.status} /></div>
+                    <div className="mt">{j.title || j.client || `Job #${j.id}`}</div>
+                    <div className="small muted">{j.driver || 'No driver'} · {j.fleet_no || j.rego || 'No bus'}</div>
+                  </a>
+                ))}
+              </div>
+              <table className="desk">
                 <tbody>
                   {todayJobs.map((j: any) => (
                     <tr key={j.id}>
@@ -59,7 +68,7 @@ export default async function Dashboard() {
                   ))}
                 </tbody>
               </table>
-            )}
+            </>)}
           </div>
           <div className="card">
             <h2>Sales (this month)</h2>

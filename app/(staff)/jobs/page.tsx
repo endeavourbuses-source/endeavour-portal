@@ -26,8 +26,22 @@ export default async function Jobs({ searchParams }: { searchParams: Promise<any
       </Head>
       <SubNav on={`/jobs?f=${f}`} items={[['/jobs?f=upcoming', 'Upcoming'], ['/jobs?f=unassigned', 'Unassigned'], ['/jobs?f=completed', 'Completed'], ['/jobs?f=cancelled', 'Cancelled'], ['/jobs?f=all', 'All']]} />
       <div className="card">
-        {list.length === 0 ? <Empty>No jobs here.</Empty> : (
-          <table>
+        {list.length === 0 ? <Empty>No jobs here.</Empty> : (<>
+          <div className="mlist">
+            {list.map((j: any) => (
+              <a key={j.id} href={`/jobs/${j.id}`} className="mitem">
+                <div className="mrow"><b>{fmtDate(j.date)} · {j.start_time}–{j.end_time}</b><Badge s={j.status} /></div>
+                <div className="mt">{j.title || j.client || `Job #${j.id}`}{j.recurring_group && ' 🔁'}</div>
+                <div className="small muted">{j.pickup} → {j.dropoff} · {j.passengers} pax</div>
+                <div className="mrow small">
+                  <span>{j.subcontractor ? `Sub: ${j.subcontractor}` : j.driver ? `👤 ${j.driver}${j.driver_ack_at ? ' ✓' : ''}` : <span className="b red">No driver</span>}</span>
+                  <span>{j.fleet_no || j.rego ? `🚌 ${j.fleet_no || j.rego}` : j.subcontractor ? '' : <span className="b red">No bus</span>}</span>
+                  <span>{money(j.price)}</span>
+                </div>
+              </a>
+            ))}
+          </div>
+          <table className="desk">
             <thead><tr><th>Date</th><th>Time</th><th>Job</th><th>Driver</th><th>Bus</th><th>Status</th><th className="r">Price</th></tr></thead>
             <tbody>
               {list.map((j: any) => (
@@ -43,7 +57,7 @@ export default async function Jobs({ searchParams }: { searchParams: Promise<any
               ))}
             </tbody>
           </table>
-        )}
+        </>)}
       </div>
     </>
   );

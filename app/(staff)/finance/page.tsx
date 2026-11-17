@@ -34,7 +34,16 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
       <SubNav on={`/finance?f=${f}`} items={[['/finance?f=open', 'Open'], ['/finance?f=draft', 'Draft'], ['/finance?f=overdue', 'Overdue'], ['/finance?f=paid', 'Paid'], ['/finance?f=all', 'All']]} />
       <div className="grid g2" style={{ gridTemplateColumns: '2fr 1fr' }}>
         <div className="card">
-          <table>
+          <div className="mlist">
+            {list.map((i: any) => (
+              <a key={i.id} href={`/finance/${i.id}`} className="mitem">
+                <div className="mrow"><b>{i.number}</b><Badge s={i.state} /></div>
+                <div className="mt">{i.client || '—'}</div>
+                <div className="mrow small muted"><span>Due {fmtDate(i.due_date)}</span><span>Total {money(i.total)}</span>{i.kind === 'invoice' && <span><b>Owing {money(Number(i.total) - Number(i.paid))}</b></span>}</div>
+              </a>
+            ))}
+          </div>
+          <table className="desk">
             <thead><tr><th>Number</th><th>Client</th><th>Issued</th><th>Due</th><th className="r">Total</th><th className="r">Owing</th><th>Status</th></tr></thead>
             <tbody>
               {list.map((i: any) => (
