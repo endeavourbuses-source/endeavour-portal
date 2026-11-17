@@ -1,0 +1,1 @@
+export const PRETRIP = ['Tyres & wheel nuts', 'Lights & indicators', 'Brakes & air pressure', 'Mirrors & windows', 'Doors & emergency exits', 'Seatbelts', 'First aid kit & fire extinguisher', 'Fluids & no leaks', 'Interior clean', 'Wheelchair lift / ramp (if fitted)'];
